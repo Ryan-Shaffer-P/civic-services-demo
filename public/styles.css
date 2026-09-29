@@ -150,3 +150,4 @@ footer p { margin: 0; }
 .form-error:empty { display: none; }
 .notice { font-size: .95rem; margin: 0 0 1.25rem; }
 
+.ts-slot { min-height: 65px; margin: 0 0 1rem; }
