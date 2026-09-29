@@ -10,6 +10,10 @@
     // Run the Worker for every request so it can check the session first
     "run_worker_first": true
   },
+  "vars": {
+    // Frontend hostnames the Turnstile token may come from (production only)
+    "TURNSTILE_HOSTNAMES": "dcs.shaffernet.net"
+  },
   "d1_databases": [
     {
       "binding": "DB",
