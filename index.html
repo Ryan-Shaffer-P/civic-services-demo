@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report a problem | Department of Civic Services</title>
+  <meta name="description" content="Report potholes, streetlight outages, water leaks and other city infrastructure problems.">
+  <style>
+    :root {
+      --header: #162e51;       /* navy header strip */
+      --page: #f7f9fb;        /* cool off-white page */
+      --accent: #005ea2;      /* links, buttons, icons, rules */
+      --accent-deep: #0b1f3a; /* body copy, headings, hover, footer, callouts */
+      --panel: #e6ecf3;       /* form panel tint */
+      --alert: #b50909;       /* errors and the emergency callout */
+      --Soft: 5px;
+      --Depth: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--accent-deep);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 1.0625rem;
+      line-height: 1.55;
+    }
+    .wrap { width: min(100% - 2rem, 70rem); margin-inline: auto; }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    a:hover { color: var(--accent-deep); }
+    :focus-visible { outline: 3px solid var(--accent-deep); outline-offset: 2px; }
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* Header */
+    .site-header { background: var(--header); color: var(--page); border-bottom: 4px solid var(--alert); }
+    .site-header a { color: var(--page); }
+    .site-header :focus-visible { outline-color: var(--page); }
+    .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 2rem; padding-block: .9rem; }
+    .brand { display: flex; flex-direction: column; text-decoration: none; line-height: 1.15; }
+    .brand strong { font-size: 1.25rem; letter-spacing: .01em; }
+    .brand span { font-size: .9rem; }
+    .site-header nav { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; }
+    .site-header nav a { text-decoration: none; padding: .25rem 0; border-bottom: 2px solid transparent; }
+    .site-header nav a:hover, .site-header nav a[aria-current="page"] { border-bottom-color: var(--page); }
+
+    /* Intro */
+    .intro { padding-block: 2.5rem 1.75rem; }
+    .intro h1 { padding-left: 1rem; border-left: 8px solid var(--header); }
+    h1 { font-size: clamp(1.9rem, 4.5vw, 2.9rem); line-height: 1.1; margin: 0 0 .75rem; max-width: 20ch; letter-spacing: -.01em; }
+    .intro p { margin: 0; max-width: 55ch; font-size: 1.15rem; }
+
+    /* Layout */
+    .layout { display: grid; gap: 2rem; padding-bottom: 3rem; align-items: start; }
+    @media (min-width: 62rem) { .layout { grid-template-columns: minmax(0, 1fr) 22rem; gap: 3rem; } }
+
+    /* Form */
+    #request-form { background: var(--panel); border: 2px solid var(--accent); border-top: 8px solid var(--header); border-radius: var(--Soft); padding: 1.5rem; box-shadow: var(--Depth); }
+    @media (min-width: 40rem) { #request-form { padding: 2rem; } }
+    fieldset + fieldset { border-top: 2px solid var(--accent); padding-top: 1.5rem; }
+    fieldset { border: 0; padding: 0; margin: 0 0 2rem; min-width: 0; }
+    legend { font-size: 1.3rem; font-weight: 700; padding: 0; margin-bottom: .75rem; }
+    .step { display: inline-block; min-width: 1.75rem; height: 1.75rem; line-height: 1.75rem; margin-right: .5rem; text-align: center; font-size: .95rem; border-radius: 50%; background: var(--header); color: var(--page); }
+    .hint { margin: 0 0 .75rem; font-size: .95rem; }
+
+    .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: .75rem; }
+    .tile { position: relative; box-shadow: var(--Depth); display: flex; flex-direction: column; align-items: flex-start; gap: .6rem; padding: .9rem; border: 2px solid var(--accent-deep); border-radius: var(--Soft); background: var(--page); color: var(--accent-deep); cursor: pointer; font-weight: 600; line-height: 1.25; }
+    .tile svg { width: 1.6rem; height: 1.6rem; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .tile:hover { box-shadow: var(--Depth); }
+    .tile:has(input:checked) { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--page); box-shadow: var(--Depth); }
+    .tile:has(input:checked) svg { stroke: var(--page); }
+    .tile:has(input:focus-visible) { outline: 3px solid var(--accent-deep); outline-offset: 2px; }
+
+    .field { margin-bottom: 1.1rem; max-width: 36rem; }
+    label.lbl { display: block; font-weight: 600; margin-bottom: .3rem; }
+    .opt { font-weight: 400; }
+    input[type="text"], input[type="email"], input[type="tel"], textarea {
+      width: 100%; font: inherit; color: var(--accent-deep); background: var(--page);
+      border: 2px solid var(--accent-deep); border-radius: var(--Soft); padding: .7rem .8rem;
+      box-shadow: var(--Depth), inset 0 2px 0 rgba(11, 31, 58, .12);
+    }
+    input[type="text"]:hover, input[type="email"]:hover, input[type="tel"]:hover, textarea:hover { border-color: var(--header); }
+    input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, textarea:focus {
+      border-color: var(--accent); outline: 3px solid var(--accent); outline-offset: 0;
+    }
+    textarea { min-height: 7.5rem; resize: vertical; }
+    ::placeholder { color: var(--accent); opacity: 1; }
+    [aria-invalid="true"] { border-color: var(--alert) !important; }
+    .error { color: var(--alert); font-size: .95rem; margin: .3rem 0 0; font-weight: 600; }
+    .error:empty { display: none; }
+    input[type="file"] { font: inherit; max-width: 100%; }
+    input[type="file"]::file-selector-button { font: inherit; font-weight: 600; margin-right: .75rem; padding: .45rem .9rem; color: var(--accent); background: var(--page); border: 2px solid var(--accent); border-radius: var(--Soft); cursor: pointer; }
+    .check { display: flex; gap: .6rem; align-items: flex-start; }
+    .check input { width: 1.2rem; height: 1.2rem; margin-top: .25rem; accent-color: var(--accent); }
+
+    .btn { font: inherit; font-weight: 700; color: var(--page); background: var(--accent); border: 2px solid var(--accent); border-radius: var(--Soft); padding: .7rem 1.4rem; cursor: pointer; }
+    .btn:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+    .btn.secondary { background: transparent; color: var(--accent); }
+    .btn.secondary:hover { background: var(--accent-deep); color: var(--page); }
+    .btn.inverse { background: var(--page); color: var(--accent-deep); border-color: var(--page); }
+    .btn.inverse:hover { background: var(--accent); color: var(--page); border-color: var(--page); }
+    @media (prefers-reduced-motion: no-preference) { .btn, .tile { transition: background-color .15s, color .15s, box-shadow .15s; } }
+
+    /* Confirmation */
+    .confirm { background: var(--accent-deep); color: var(--page); border-radius: var(--Soft); box-shadow: var(--Depth); padding: 2rem; }
+    .confirm[hidden], form[hidden] { display: none; }
+    .confirm h2 { margin: 0 0 .5rem; font-size: 1.6rem; }
+    .confirm .num { font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 700; letter-spacing: .02em; margin: .5rem 0 1rem; font-variant-numeric: tabular-nums; }
+    .confirm dl { margin: 0 0 1.5rem; display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1rem; }
+    .confirm dt { font-weight: 700; }
+    .confirm dd { margin: 0; overflow-wrap: anywhere; }
+
+    /* Sidebar */
+    aside > section { margin-bottom: 2rem; }
+    aside h2 { font-size: 1.25rem; margin: 0 0 .6rem; }
+    .callout { border-top: 6px solid var(--alert); background: var(--accent-deep); color: var(--page); border-radius: var(--Soft); padding: 1.1rem 1.2rem; box-shadow: var(--Depth); }
+    .callout h2 { margin-bottom: .4rem; }
+    .callout p { margin: 0 0 .5rem; }
+    .callout p:last-child { margin: 0; }
+    .callout a { color: var(--page); font-weight: 700; }
+    .status-form { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .status-form input { flex: 1 1 10rem; }
+    #status-result { margin: .6rem 0 0; min-height: 1.5rem; }
+
+    .recent { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--accent); }
+    .recent li { padding: .8rem 0; border-bottom: 1px solid var(--accent); }
+    .recent .top { display: flex; justify-content: space-between; align-items: baseline; gap: .75rem; }
+    .recent .kind { font-weight: 700; }
+    .recent .where { margin: .1rem 0 0; }
+    .recent .meta { margin: .1rem 0 0; font-size: .9rem; }
+    .pill { flex: none; font-size: .85rem; font-weight: 700; padding: .1rem .6rem; border-radius: 999px; border: 2px solid var(--accent); color: var(--accent); }
+    .pill.progress { background: var(--accent); color: var(--page); }
+    .pill.done { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--page); }
+
+    /* Footer */
+    footer { background: var(--accent-deep); color: var(--page); padding-block: 1.5rem; font-size: .95rem; }
+    footer a { color: var(--page); }
+    footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 2rem; }
+    footer p { margin: 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="brand" href="/">
+        <strong>Department of Civic Services</strong>
+        <span>Infrastructure Service Requests</span>
+      </a>
+      <nav aria-label="Main">
+        <a href="#report" aria-current="page">Report a problem</a>
+        <a href="#status">Check a request</a>
+        <a href="#recent">Recent requests</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap intro">
+      <h1>Report a problem with a street, light or pipe</h1>
+      <p>Tell us what's wrong and where it is. A crew member reviews every request, usually within two business days.</p>
+    </section>
+
+    <div class="wrap layout">
+      <section id="report" aria-label="Service request">
+        <form id="request-form" novalidate>
+          <fieldset>
+            <legend><span class="step" aria-hidden="true">1</span>What's the problem?</legend>
+            <div class="tiles" role="radiogroup" aria-describedby="err-category">
+              <label class="tile">
+                <input class="visually-hidden" type="radio" name="category" value="Pothole or road damage">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="15" rx="7.5" ry="3.5"/><path d="M3 9.5h4M17 9.5h4M12 4.5v3"/></svg>
+                <span>Pothole or road damage</span>
+              </label>
+              <label class="tile">
+                <input class="visually-hidden" type="radio" name="category" value="Streetlight out">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 21V7M12 7h6.5M18.5 7v3"/><circle cx="18.5" cy="12.5" r="2"/></svg>
+                <span>Streetlight out</span>
+              </label>
+              <label class="tile">
+                <input class="visually-hidden" type="radio" name="category" value="Water leak or sewer backup">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.2 4 6 7 6 11a6 6 0 0 1-12 0c0-4 2.800-7 6-11z"/></svg>
+                <span>Water leak or sewer backup</span>
+              </label>
+              <label class="tile">
+                <input class="visually-hidden" type="radio" name="category" value="Sidewalk or curb damage">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v10H3z"/><path d="M12 7l-2 3.500 3 2-2 4.500"/></svg>
+                <span>Sidewalk or curb damage</span>
+              </label>
+              <label class="tile">
+                <input class="visually-hidden" type="radio" name="category" value="Traffic signal or sign">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.500" y="2.500" width="7" height="19" rx="2"/><circle cx="12" cy="7" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="17" r="1"/></svg>
+                <span>Traffic signal or sign</span>
+              </label>
+              <label class="tile">
+                <input class="visually-hidden" type="radio" name="category" value="Something else">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="1.500"/><circle cx="12" cy="12" r="1.500"/><circle cx="18" cy="12" r="1.500"/></svg>
+                <span>Something else</span>
+              </label>
+            </div>
+            <p class="error" id="err-category" role="alert"></p>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step" aria-hidden="true">2</span>Where is it?</legend>
+            <div class="field">
+              <label class="lbl" for="address">Street address or cross streets</label>
+              <input id="address" name="address" type="text" autocomplete="street-address" placeholder="Maple Ave and 4th St" aria-describedby="err-address">
+              <p class="error" id="err-address" role="alert"></p>
+            </div>
+            <div class="field">
+              <label class="lbl" for="landmark">Nearby landmark <span class="opt">(optional)</span></label>
+              <input id="landmark" name="landmark" type="text" placeholder="In front of the bus shelter">
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step" aria-hidden="true">3</span>Tell us more</legend>
+            <div class="field">
+              <label class="lbl" for="details">What do you see?</label>
+              <textarea id="details" name="details" placeholder="Size, how long it has been there, anything that makes it a hazard" aria-describedby="err-details"></textarea>
+              <p class="error" id="err-details" role="alert"></p>
+            </div>
+            <div class="field">
+              <label class="lbl" for="photo">Photo <span class="opt">(optional)</span></label>
+              <input id="photo" name="photo" type="file" accept="image/*">
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step" aria-hidden="true">4</span>How can we reach you?</legend>
+            <div class="field">
+              <label class="lbl" for="name">Full name</label>
+              <input id="name" name="name" type="text" autocomplete="name" aria-describedby="err-name">
+              <p class="error" id="err-name" role="alert"></p>
+            </div>
+            <div class="field">
+              <label class="lbl" for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email" aria-describedby="err-email">
+              <p class="error" id="err-email" role="alert"></p>
+            </div>
+            <div class="field">
+              <label class="lbl" for="phone">Phone <span class="opt">(optional)</span></label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel">
+            </div>
+            <div class="field check">
+              <input id="updates" name="updates" type="checkbox" checked>
+              <label for="updates">Email me when the status of this request changes</label>
+            </div>
+          </fieldset>
+
+          <button class="btn" type="submit">Submit request</button>
+        </form>
+
+        <div class="confirm" id="confirm" hidden tabindex="-1" role="status" aria-live="polite">
+          <h2>Request submitted</h2>
+          <p>Keep this number to check on your request.</p>
+          <p class="num" id="confirm-num"></p>
+          <dl>
+            <dt>Problem</dt><dd id="confirm-cat"></dd>
+            <dt>Location</dt><dd id="confirm-where"></dd>
+            <dt>Updates to</dt><dd id="confirm-email"></dd>
+          </dl>
+          <button class="btn inverse" type="button" id="another">Report another problem</button>
+        </div>
+      </section>
+
+      <aside>
+        <section class="callout" aria-labelledby="emergency-h">
+          <h2 id="emergency-h">Is it an emergency?</h2>
+          <p>For a downed power line, a main break flooding a street or a signal that is dark at a busy intersection, don't use this form.</p>
+          <p>Call <a href="tel:911">911</a>, or the 24-hour Civic Services line at <a href="tel:+15550142">555-0142</a>.</p>
+        </section>
+
+        <section id="status" aria-labelledby="status-h">
+          <h2 id="status-h">Check a request</h2>
+          <form class="status-form" id="status-form" novalidate>
+            <label class="visually-hidden" for="req-num">Request number</label>
+            <input id="req-num" type="text" placeholder="SR-2026-10482" autocomplete="off">
+            <button class="btn secondary" type="submit">Check status</button>
+          </form>
+          <p id="status-result" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="recent" aria-labelledby="recent-h">
+          <h2 id="recent-h">Recent requests near you</h2>
+          <ul class="recent" id="recent-list"></ul>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Department of Civic Services &middot; 400 Civic Plaza</p>
+      <p>Demo site: requests are not sent anywhere and this agency is fictional.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var STATUS = { received: ["Received", ""], progress: ["In progress", "progress"], done: ["Resolved", "done"] };
+      var requests = [
+        { id: "SR-2026-10482", kind: "Pothole or road damage", where: "Maple Ave and 4th St", when: "2 days ago", status: "progress" },
+        { id: "SR-2026-10477", kind: "Streetlight out", where: "210 Harbor Rd", when: "3 days ago", status: "received" },
+        { id: "SR-2026-10431", kind: "Water leak or sewer backup", where: "Cedar Ct", when: "6 days ago", status: "done" },
+        { id: "SR-2026-10419", kind: "Sidewalk or curb damage", where: "88 Mill St", when: "8 days ago", status: "progress" },
+        { id: "SR-2026-10402", kind: "Traffic signal or sign", where: "River Rd and Elm Ave", when: "10 days ago", status: "done" }
+      ];
+
+      var form = document.getElementById("request-form");
+      var confirmBox = document.getElementById("confirm");
+      var list = document.getElementById("recent-list");
+
+      function el(tag, cls, text) {
+        var n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
+      }
+
+      function renderRecent() {
+        list.textContent = "";
+        requests.slice(0, 6).forEach(function (r) {
+          var li = el("li");
+          var top = el("div", "top");
+          top.appendChild(el("span", "kind", r.kind));
+          top.appendChild(el("span", "pill " + STATUS[r.status][1], STATUS[r.status][0]));
+          li.appendChild(top);
+          li.appendChild(el("p", "where", r.where));
+          li.appendChild(el("p", "meta", r.id + " \u00b7 " + r.when));
+          list.appendChild(li);
+        });
+      }
+
+      function setError(field, id, msg) {
+        var err = document.getElementById("err-" + id);
+        err.textContent = msg || "";
+        if (field) {
+          if (msg) field.setAttribute("aria-invalid", "true");
+          else field.removeAttribute("aria-invalid");
+        }
+        return !msg;
+      }
+
+      function validate() {
+        var f = form.elements;
+        var first = null;
+        function note(ok, node) { if (!ok && !first) first = node; }
+
+        var cat = form.querySelector('input[name="category"]:checked');
+        note(setError(null, "category", cat ? "" : "Choose the kind of problem."), form.querySelector('input[name="category"]'));
+        note(setError(f.address, "address", f.address.value.trim() ? "" : "Enter a street address or cross streets."), f.address);
+        note(setError(f.details, "details", f.details.value.trim().length >= 10 ? "" : "Describe the problem in at least 10 characters."), f.details);
+        note(setError(f.name, "name", f.name.value.trim() ? "" : "Enter your name."), f.name);
+        var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.value.trim());
+        note(setError(f.email, "email", emailOk ? "" : "Enter an email address like name@example.com."), f.email);
+
+        if (first) first.focus();
+        return !first;
+      }
+
+      function newId() {
+        return "SR-2026-" + String(Math.floor(10500 + Math.random() * 89000));
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (!validate()) return;
+        var f = form.elements;
+        var cat = form.querySelector('input[name="category"]:checked').value;
+        var where = f.address.value.trim();
+        var id = newId();
+
+        requests.unshift({ id: id, kind: cat, where: where, when: "just now", status: "received" });
+        renderRecent();
+
+        document.getElementById("confirm-num").textContent = id;
+        document.getElementById("confirm-cat").textContent = cat;
+        document.getElementById("confirm-where").textContent = where;
+        document.getElementById("confirm-email").textContent = f.updates.checked ? f.email.value.trim() : "No email updates";
+
+        form.hidden = true;
+        confirmBox.hidden = false;
+        confirmBox.focus();
+      });
+
+      form.addEventListener("input", function (e) {
+        var t = e.target;
+        if (t.name === "category") setError(null, "category", "");
+        else if (t.id && document.getElementById("err-" + t.id)) setError(t, t.id, "");
+      });
+
+      document.getElementById("another").addEventListener("click", function () {
+        form.reset();
+        form.hidden = false;
+        confirmBox.hidden = true;
+        window.scrollTo({ top: document.getElementById("report").offsetTop - 16 });
+        form.querySelector('input[name="category"]').focus();
+      });
+
+      document.getElementById("status-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var out = document.getElementById("status-result");
+        var q = document.getElementById("req-num").value.trim().toUpperCase();
+        if (!q) { out.textContent = "Enter the request number from your confirmation."; return; }
+        var hit = requests.filter(function (r) { return r.id === q; })[0];
+        out.textContent = hit
+          ? hit.id + ": " + STATUS[hit.status][0] + " (" + hit.kind + ", " + hit.where + ")."
+          : "No request found for " + q + ". Check the number and try again.";
+      });
+
+      renderRecent();
+    })();
+  </script>
+</body>
+</html>
