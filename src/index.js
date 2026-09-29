@@ -8,10 +8,20 @@ const SESSION_SECONDS = 7 * 24 * 60 * 60;
 const PBKDF2_ITERATIONS = 100000; // Workers' maximum for PBKDF2
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INVALID_LOGIN = "Incorrect email or password.";
+const VERIFY_FAILED = "Verification failed. Complete the check and try again.";
 
 // Reachable without signing in
 const PUBLIC_PATHS = new Set(["/login", "/login.html", "/signup", "/signup.html", "/styles.css", "/auth.js", "/favicon.ico"]);
 const AUTH_PAGES = new Set(["/login", "/signup"]);
+
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+// Login and signup pages also load the Turnstile widget (script + iframe)
+const AUTH_CSP_PATHS = new Set(["/login", "/login.html", "/signup", "/signup.html"]);
+const AUTH_CSP =
+  "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; " +
+  "frame-src https://challenges.cloudflare.com; img-src 'self' data:; " +
+  "base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 
 const SECURITY_HEADERS = {
   "Content-Security-Policy":
@@ -35,7 +45,9 @@ export default {
 
       if (PUBLIC_PATHS.has(path)) {
         if (user && AUTH_PAGES.has(path)) return withSecurity(redirect("/"));
-        return withSecurity(await env.ASSETS.fetch(request));
+        return withSecurity(await env.ASSETS.fetch(request), {
+          csp: AUTH_CSP_PATHS.has(path) ? AUTH_CSP : undefined,
+        });
       }
       if (!user) return withSecurity(redirect("/login"));
       return withSecurity(await env.ASSETS.fetch(request), { noStore: true });
@@ -69,10 +81,11 @@ async function handleApi(request, env, url) {
 
   const body = await readJson(request);
   if (!body) return json({ error: "Invalid request." }, 400);
-  return path === "/api/signup" ? signup(body, env, url) : login(body, env, url);
+  const ip = request.headers.get("CF-Connecting-IP") || "";
+  return path === "/api/signup" ? signup(body, env, url, ip) : login(body, env, url, ip);
 }
 
-async function signup(body, env, url) {
+async function signup(body, env, url, ip) {
   const name = String(body.name ?? "").trim();
   const email = String(body.email ?? "").trim().toLowerCase();
   const password = String(body.password ?? "");
@@ -81,6 +94,11 @@ async function signup(body, env, url) {
   if (!EMAIL_RE.test(email) || email.length > 254) return json({ error: "Enter a valid email address." }, 400);
   if (password.length < 10 || password.length > 128) {
     return json({ error: "Password must be 10 to 128 characters." }, 400);
+  }
+
+  // Verify before the expensive password hash
+  if (!(await verifyTurnstile(env, body["cf-turnstile-response"], "signup", ip))) {
+    return json({ error: VERIFY_FAILED }, 403);
   }
 
   const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -103,10 +121,14 @@ async function signup(body, env, url) {
   return json({ ok: true }, 201, { "Set-Cookie": cookie });
 }
 
-async function login(body, env, url) {
+async function login(body, env, url, ip) {
   const email = String(body.email ?? "").trim().toLowerCase();
   const password = String(body.password ?? "");
   if (!email || !password || password.length > 128) return json({ error: INVALID_LOGIN }, 401);
+
+  if (!(await verifyTurnstile(env, body["cf-turnstile-response"], "login", ip))) {
+    return json({ error: VERIFY_FAILED }, 403);
+  }
 
   const user = await env.DB.prepare(
     "SELECT id, pw_salt, pw_hash, pw_iter FROM users WHERE email = ?1"
@@ -132,6 +154,37 @@ async function logout(request, env, url) {
     await env.DB.prepare("DELETE FROM sessions WHERE token_hash = ?1").bind(await sha256hex(token)).run();
   }
   return json({ ok: true }, 200, { "Set-Cookie": cookieString("", url, 0) });
+}
+
+/* ---------- Turnstile ---------- */
+
+// Server-side siteverify. Fails closed: any error, missing config, wrong action
+// or unexpected hostname rejects the request. Tokens are single-use.
+async function verifyTurnstile(env, token, expectedAction, ip) {
+  const hostnames = new Set(
+    String(env.TURNSTILE_HOSTNAMES ?? "").split(",").map((h) => h.trim()).filter(Boolean)
+  );
+  if (!env.TURNSTILE_SECRET || hostnames.size === 0) {
+    console.error("Turnstile is not configured: set the TURNSTILE_SECRET secret and TURNSTILE_HOSTNAMES var");
+    return false;
+  }
+  if (typeof token !== "string" || token.length === 0 || token.length > 2048) return false;
+
+  try {
+    const form = new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token });
+    if (ip) form.set("remoteip", ip);
+    const res = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`siteverify ${res.status}`);
+    const result = await res.json();
+    return result.success === true && result.action === expectedAction && hostnames.has(result.hostname);
+  } catch (err) {
+    console.error("Turnstile siteverify failed:", err && err.message);
+    return false;
+  }
 }
 
 /* ---------- Sessions ---------- */
@@ -219,9 +272,10 @@ function redirect(location) {
   return new Response(null, { status: 302, headers: { Location: location, "cache-control": "no-store" } });
 }
 
-function withSecurity(res, { noStore = false } = {}) {
+function withSecurity(res, { noStore = false, csp } = {}) {
   const out = new Response(res.body, res);
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
+  if (csp) out.headers.set("Content-Security-Policy", csp);
   if (noStore) out.headers.set("Cache-Control", "private, no-store");
   return out;
 }
