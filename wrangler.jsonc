@@ -16,5 +16,8 @@
       "database_name": "civic-services-db",
       "database_id": "46f379ee-90e0-400c-8d66-cdadbb5b5331"
     }
+  ],
+  "routes": [
+    { "pattern": "dcs.shaffernet.net", "custom_domain": true }
   ]
 }
